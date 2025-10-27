@@ -14,7 +14,9 @@ services:
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.js
 
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: techstack_backend
     restart: always
     ports:
@@ -30,18 +32,20 @@ services:
       - /app/node_modules
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend           # ✅ ensures nginx.conf is visible during build
+      dockerfile: Dockerfile
     container_name: techstack_frontend
     restart: always
     ports:
-      - "3000:80"
+      - "3000:80"                   # ✅ app accessible via http://<ip>:3000
     environment:
       - REACT_APP_API_URL=http://54.87.210.212:5000/api
     depends_on:
       - backend
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+    # ❌ Removed volumes, because this container serves static build via nginx
+    # If you mount local code, it overwrites /usr/share/nginx/html
 
 volumes:
   mongodb_data:
+
